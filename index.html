@@ -994,7 +994,9 @@
         const closeModalBtn = document.getElementById('closeModal');
         const openModalButtons = document.querySelectorAll('.open-lead-form');
         const leadForm = document.getElementById('studentLeadForm');
+        const submitBtn = document.getElementById('submitBtn');
 
+        // Modal visibility triggers
         openModalButtons.forEach(button => {
             button.addEventListener('click', () => {
                 modalOverlay.classList.add('active');
@@ -1011,13 +1013,53 @@
             }
         });
 
-        leadForm.addEventListener('submit', (e) => {
-            e.preventDefault();
-            const name = document.getElementById('studentName').value;
-            const phone = document.getElementById('studentPhone').value;
-            alert(`Thank you ${name}! Your free spoken English consultation slot has been reserved. Our team will call you at ${phone} shortly.`);
-            leadForm.reset();
-            modalOverlay.classList.remove('active');
+        // RE-ENGINEERED WEB3FORMS PRODUCTION-READY TRANSMISSION LOGIC
+        leadForm.addEventListener('submit', function(e) {
+            e.preventDefault(); // Prevent standard browser redirect loops
+            
+            // Visual loading indication for premium user feedback
+            submitBtn.innerText = "Securing Your Priority Slot...";
+            submitBtn.style.opacity = "0.7";
+            submitBtn.disabled = true;
+
+            // Gather structural inputs and process natively into JSON fields
+            const formData = new FormData(leadForm);
+            const object = Object.fromEntries(formData);
+            const json = JSON.stringify(object);
+
+            // Execute asynchronous background pipeline directly to Web3Forms API
+            fetch('https://api.web3forms.com/submit', {
+                method: 'POST',
+                headers: { 
+                    'Content-Type': 'application/json', 
+                    'Accept': 'application/json' 
+                },
+                body: json
+            })
+            .then(async (response) => {
+                let res = await response.json();
+                if (response.status == 200) {
+                    // Success Path: Clean up the UI view matrix
+                    leadForm.reset();
+                    modalOverlay.classList.remove('active');
+                    
+                    // Display success confirmation smoothly to the applicant
+                    alert(`Thank you ${object['Student Name'] || 'there'}! Your free spoken English consultation slot has been securely received. Our admissions board team will contact you shortly.`);
+                } else {
+                    // Fail path fallback if API parameters match incorrectly
+                    alert(res.message || "Submission rejected. Please cross-verify your Access Key token setup configuration.");
+                }
+            })
+            .catch(error => {
+                console.error("Transmission Error Logged:", error);
+                alert("Network communication timeout error. Please check your internet connectivity or try again.");
+            })
+            .finally(() => {
+                // Always restore button states cleanly back to operational states
+                submitBtn.innerText = "Submit & Book Consultation";
+                submitBtn.style.opacity = "1";
+                submitBtn.disabled = false;
+            });
         });
     </script>
 
